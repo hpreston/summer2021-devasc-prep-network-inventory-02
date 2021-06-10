@@ -1,0 +1,126 @@
+{
+    "totalCount": "4",
+    "subscriptionId": "72057748673658888",
+    "imdata": [
+        {
+            "fabricNode": {
+                "attributes": {
+                    "adSt": "on",
+                    "address": "10.0.0.64",
+                    "annotation": "",
+                    "apicType": "apic",
+                    "childAction": "",
+                    "delayedHeartbeat": "no",
+                    "dn": "topology/pod-1/node-101",
+                    "extMngdBy": "",
+                    "fabricSt": "active",
+                    "id": "101",
+                    "lastStateModTs": "2021-06-10T17:30:15.087+00:00",
+                    "lcOwn": "local",
+                    "modTs": "2021-06-10T17:30:40.120+00:00",
+                    "model": "N9K-C9396PX",
+                    "monPolDn": "uni/fabric/monfab-default",
+                    "name": "leaf-1",
+                    "nameAlias": "",
+                    "nodeType": "unspecified",
+                    "role": "leaf",
+                    "serial": "TEP-1-101",
+                    "status": "",
+                    "uid": "0",
+                    "vendor": "Cisco Systems, Inc",
+                    "version": ""
+                }
+            }
+        },
+        {
+            "fabricNode": {
+                "attributes": {
+                    "adSt": "on",
+                    "address": "10.0.0.66",
+                    "annotation": "",
+                    "apicType": "apic",
+                    "childAction": "",
+                    "delayedHeartbeat": "no",
+                    "dn": "topology/pod-1/node-102",
+                    "extMngdBy": "",
+                    "fabricSt": "active",
+                    "id": "102",
+                    "lastStateModTs": "2021-06-10T17:31:40.317+00:00",
+                    "lcOwn": "local",
+                    "modTs": "2021-06-10T17:32:40.169+00:00",
+                    "model": "N9K-C9396PX",
+                    "monPolDn": "uni/fabric/monfab-default",
+                    "name": "leaf-2",
+                    "nameAlias": "",
+                    "nodeType": "unspecified",
+                    "role": "leaf",
+                    "serial": "TEP-1-102",
+                    "status": "",
+                    "uid": "0",
+                    "vendor": "Cisco Systems, Inc",
+                    "version": ""
+                }
+            }
+        },
+        {
+            "fabricNode": {
+                "attributes": {
+                    "adSt": "on",
+                    "address": "10.0.0.65",
+                    "annotation": "",
+                    "apicType": "apic",
+                    "childAction": "",
+                    "delayedHeartbeat": "no",
+                    "dn": "topology/pod-1/node-201",
+                    "extMngdBy": "",
+                    "fabricSt": "active",
+                    "id": "201",
+                    "lastStateModTs": "2021-06-10T17:31:02.498+00:00",
+                    "lcOwn": "local",
+                    "modTs": "2021-06-10T17:31:40.136+00:00",
+                    "model": "N9K-C9508",
+                    "monPolDn": "uni/fabric/monfab-default",
+                    "name": "spine-1",
+                    "nameAlias": "",
+                    "nodeType": "unspecified",
+                    "role": "spine",
+                    "serial": "TEP-1-103",
+                    "status": "",
+                    "uid": "0",
+                    "vendor": "Cisco Systems, Inc",
+                    "version": ""
+                }
+            }
+        },
+        {
+            "fabricNode": {
+                "attributes": {
+                    "adSt": "on",
+                    "address": "10.0.0.1",
+                    "annotation": "",
+                    "apicType": "apic",
+                    "childAction": "",
+                    "delayedHeartbeat": "no",
+                    "dn": "topology/pod-1/node-1",
+                    "extMngdBy": "",
+                    "fabricSt": "unknown",
+                    "id": "1",
+                    "lastStateModTs": "1970-01-01T00:00:00.000+00:00",
+                    "lcOwn": "local",
+                    "modTs": "2021-06-10T17:27:49.364+00:00",
+                    "model": "VMware Virtual Platform",
+                    "monPolDn": "uni/fabric/monfab-default",
+                    "name": "apic1",
+                    "nameAlias": "",
+                    "nodeType": "unspecified",
+                    "role": "controller",
+                    "serial": "TEP-1-1",
+                    "status": "",
+                    "uid": "0",
+                    "vendor": "Cisco Systems, Inc",
+                    "version": "None"
+                }
+            }
+        }
+    ]
+}

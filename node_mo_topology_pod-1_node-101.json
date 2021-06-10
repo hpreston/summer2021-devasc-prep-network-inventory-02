@@ -1,0 +1,58 @@
+{
+    "totalCount": "1",
+    "status": "Error executing transaction. Potential reasons include unfit clusters or db read errors or other internal errors. Please make sure cluster is in fully-fit state resolve all errors and try again",
+    "imdata": [
+        {
+            "topSystem": {
+                "attributes": {
+                    "address": "10.0.168.64",
+                    "bootstrapState": "done",
+                    "childAction": "",
+                    "configIssues": "",
+                    "controlPlaneMTU": "9000",
+                    "currentTime": "2021-06-10T18:57:13.549+00:00",
+                    "dn": "topology/pod-1/node-101/sys",
+                    "enforceSubnetCheck": "no",
+                    "etepAddr": "0.0.0.0",
+                    "fabricDomain": "ACI Fabric1",
+                    "fabricId": "1",
+                    "fabricMAC": "00:22:BD:F8:19:FF",
+                    "id": "101",
+                    "inbMgmtAddr": "0.0.0.0",
+                    "inbMgmtAddr6": "::",
+                    "inbMgmtAddr6Mask": "0",
+                    "inbMgmtAddrMask": "0",
+                    "inbMgmtGateway": "0.0.0.0",
+                    "inbMgmtGateway6": "::",
+                    "lcOwn": "local",
+                    "modTs": "2021-06-10T18:45:26.618+00:00",
+                    "mode": "unspecified",
+                    "monPolDn": "uni/fabric/monfab-default",
+                    "name": "leaf-1",
+                    "nameAlias": "",
+                    "nodeType": "unspecified",
+                    "oobMgmtAddr": "0.0.0.0",
+                    "oobMgmtAddr6": "::",
+                    "oobMgmtAddr6Mask": "0",
+                    "oobMgmtAddrMask": "0",
+                    "oobMgmtGateway": "0.0.0.0",
+                    "oobMgmtGateway6": "::",
+                    "podId": "1",
+                    "remoteNetworkId": "0",
+                    "remoteNode": "no",
+                    "rldirectMode": "no",
+                    "role": "leaf",
+                    "serial": "TEP-1-101",
+                    "serverType": "unspecified",
+                    "siteId": "0",
+                    "state": "in-service",
+                    "status": "",
+                    "systemUpTime": "00:00:17:42.000",
+                    "tepPool": "10.0.0.0/16",
+                    "unicastXrEpLearnDisable": "no",
+                    "virtualMode": "no"
+                }
+            }
+        }
+    ]
+}
