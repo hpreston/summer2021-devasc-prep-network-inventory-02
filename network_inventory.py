@@ -81,7 +81,7 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
     # Authenticate to API 
     token = auth_aci(aci_address, aci_username, aci_password)
     # For debug print token value 
-    print(f"aci_token: {token}")
+    # print(f"aci_token: {token}")
 
     if not token: 
         print(f"  Error: Unable to authenticate to {aci_address}.")
@@ -102,17 +102,31 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
     # Lookup Node List from controller
     node_list_rsp = requests.get(node_list_url, cookies=cookies, verify=False)
     # For debug, print response details 
-    print(f"node_list_rsp status_code: {node_list_rsp.status_code}")
-    print(f"node_list_rsp body: {node_list_rsp.text}")
+    # print(f"node_list_rsp status_code: {node_list_rsp.status_code}")
+    # print(f"node_list_rsp body: {node_list_rsp.text}")
+
+    if node_list_rsp.status_code != 200: 
+        print(f"  Error looking up node list from APIC. Status Code was {node_list_rsp.status_code}")
+        return False 
 
     # Loop over nodes
-    # Pull information on node from list 
-    # Lookup Firmware info with API 
-    # Lookup Uptime info with API
+    fabric_nodes = node_list_rsp.json()["imdata"]
+    for node in fabric_nodes: 
+        # Pull information on node from list 
+        node_name = node["fabricNode"]["attributes"]["name"]
+        node_model = node["fabricNode"]["attributes"]["model"]
+        node_serial = node["fabricNode"]["attributes"]["serial"]
 
-    # Compile and return information
+        # Lookup Firmware info with API 
+        node_software = None
 
-    return False
+        # Lookup Uptime info with API
+        node_uptime = None
+
+        # Compile and return information
+        inventory.append( (node_name, f"apic-{node_model}", node_software, node_uptime, node_serial) )
+
+    return inventory
 
 def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password): 
     """
