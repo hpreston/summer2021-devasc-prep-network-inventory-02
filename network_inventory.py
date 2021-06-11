@@ -118,6 +118,14 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
         node_serial = node["fabricNode"]["attributes"]["serial"]
 
         # Lookup Firmware info with API 
+        node_firmware_rsp = requests.get(
+            node_firmware_url.format(aci_address=aci_address, node_dn=node["fabricNode"]["attributes"]["dn"]), 
+            cookies=cookies, verify=False
+            )
+        # For debug, print response details 
+        print(f"node_firmware_rsp status_code: {node_firmware_rsp.status_code}")
+        print(f"node_firmware_rsp body: {node_firmware_rsp.text}")
+        
         node_software = None
 
         # Lookup Uptime info with API
