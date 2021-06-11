@@ -221,7 +221,7 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
     # Authenticate to API 
     token = auth_sdwan(sdwan_address, sdwan_username, sdwan_password)
     # For debug print token value 
-    print(f"sdwan_token: {token}")
+    # print(f"sdwan_token: {token}")
 
     if not token: 
         print(f"  Error: Unable to authenticate to {sdwan_address}.")
@@ -235,15 +235,30 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
 
     device_rsp = requests.get(device_url, cookies=cookies, verify=False)
     # For Debugging, print response 
-    print(f"device_rsp status_code: {device_rsp.status_code}")
-    print(f"device_rsp body: {device_rsp.text}")
+    # print(f"device_rsp status_code: {device_rsp.status_code}")
+    # print(f"device_rsp body: {device_rsp.text}")
+
+    # List to hold data for each device from controller
+    inventory = []
+
+    # Loop over devices and return results 
+    sdwan_nodes = device_rsp.json()["data"]
+    for node in sdwan_nodes: 
+        # Pull info on node
+        node_name = node["host-name"]
+        node_model = node["device-model"]
+        node_serial = node["board-serial"]
+        node_software = node["version"]
+        node_uptime = node["uptime-date"]
+
+        inventory.append( (node_name, f"sdwan-{node_model}", node_software, node_uptime, node_serial) )
 
     # Logout API
     logout_sdwan(sdwan_address, token)
 
     # Compile and return information
 
-    return False
+    return inventory
 
 def get_device_inventory(device, show_version, show_inventory): 
     """
