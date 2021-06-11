@@ -14,6 +14,11 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 import re
 import csv
 from datetime import datetime
+import requests 
+import urllib3 
+
+# disable InsecureRequestWarning for self-signed certificates 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def parse_command(device, command): 
     """
@@ -34,6 +39,38 @@ def parse_command(device, command):
     output = device.execute(command)
     return {"type": "raw", "output": output}
 
+def auth_aci(aci_address, aci_username, aci_password): 
+    """
+    Retrieve Authentication Token from ACI Controller
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{aci_address}/api/aaaLogin.json"
+
+    # The data payload for authentication 
+    payload = {"aaaUser": 
+                {
+                    "attributes": {
+                        "name": aci_username,
+                        "pwd": aci_password
+                    }
+                }
+            }
+
+    # Send the request to the controller  
+    try: 
+        response = requests.post(url, json=payload, verify=False)
+
+        # If the authentiction request succeeded, return the token
+        if response.status_code == 200: 
+            return response.json()["imdata"][0]["aaaLogin"]["attributes"]["token"]
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to authentication to APIC")
+        print(e)
+        return False 
+    
 def lookup_aci_info(aci_address, aci_username, aci_password): 
     """
     Use REST API for ACI to lookup and return inventory details
@@ -42,8 +79,32 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
     """
 
     # Authenticate to API 
+    token = auth_aci(aci_address, aci_username, aci_password)
+    # For debug print token value 
+    print(f"aci_token: {token}")
 
+    if not token: 
+        print(f"  Error: Unable to authenticate to {aci_address}.")
+        return False
+
+    # Put token into cookie dict for requests
+    cookies = {"APIC-cookie": token}
+    
+    # List to hold data for each device from controller
+    inventory = []
+    
     # Send API Request(s) for information 
+    # API URLs
+    node_list_url = f"https://{aci_address}/api/node/class/fabricNode.json"
+    node_firmware_url = "https://{aci_address}/api/node/class/{node_dn}/firmwareRunning.json"
+    node_system_url = "https://{aci_address}/api/node/mo/{node_dn}.json?query-target=children&target-subtree-class=topSystem"
+
+    # Lookup Node List from controller
+
+    # Loop over nodes
+    # Pull information on node from list 
+    # Lookup Firmware info with API 
+    # Lookup Uptime info with API
 
     # Compile and return information
 
