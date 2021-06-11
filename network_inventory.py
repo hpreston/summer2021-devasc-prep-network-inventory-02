@@ -449,7 +449,7 @@ if __name__ == "__main__":
         network_inventory += sdwan_info
 
     # For debug, print inventory list
-    print(f"network_inventory = {network_inventory}")
+    # print(f"network_inventory = {network_inventory}")
 
     # Generate CSV file of data
     now = datetime.now()
