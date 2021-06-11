@@ -106,6 +106,19 @@ if __name__ == "__main__":
 
     # print("Creating a network inventory script.")
 
+    # Plan for adding ACI and SD-WAN to inventory 
+    # Steps: 
+    #   1. Additional arguments for ACI and SD-WAN Controllers 
+    #      - Optional arguments for addresses of each controller 
+    #   2. Request credentials for if needed 
+    #      - Use Python "input()" function 
+    #   3. Make REST API calls to gather inventory details
+    #      - After functions that parse commands for CLI devices
+    #   4. Add to network inventory
+    #      - Maintain same tuple based format from CLI devices
+    #        (device_name, device_os, software_version, uptime, serial_number)
+    #      - For device os use "controller-model" format
+
     # Load pyATS testbed into script 
     # Use argparse to determine the testbed file : https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Generate network inventory report from testbed')
