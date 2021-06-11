@@ -230,8 +230,13 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
     # Put token into cookie dict for requests
     cookies = {"JSESSIONID": token}
     
-
     # Send API Request(s) for information 
+    device_url = f"https://{sdwan_address}/dataservice/device"
+
+    device_rsp = requests.get(device_url, cookies=cookies, verify=False)
+    # For Debugging, print response 
+    print(f"device_rsp status_code: {device_rsp.status_code}")
+    print(f"device_rsp body: {device_rsp.text}")
 
     # Logout API
     logout_sdwan(sdwan_address, token)
