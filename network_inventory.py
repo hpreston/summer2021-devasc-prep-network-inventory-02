@@ -103,6 +103,7 @@ def get_device_inventory(device, show_version, show_inventory):
 # Script entry point
 if __name__ == "__main__": 
     import argparse
+    from getpass import getpass
 
     # print("Creating a network inventory script.")
 
@@ -131,11 +132,20 @@ if __name__ == "__main__":
     print(f"Loading testbed file {args.testbed}")
     testbed = load(args.testbed)
 
+    print () 
+    
     # Check if ACI and/or SD-WAN addresses provided 
     if args.aci_address: 
-        print(f"Inventory details will be pulled from Cisco APIC {args.aci_address}")
+        aci_username = input(f"What is the username for {args.aci_address}? ")
+        aci_password = getpass(f"What is the password for {args.aci_address}? (input will be hidden) ")
+
+    print()
+
     if args.sdwan_address: 
-        print(f"Inventory details will be pulled from Cisco SD-WAN Controller {args.sdwan_address}")
+        sdwan_username = input(f"What is the username for {args.sdwan_address}? ")
+        sdwan_password = getpass(f"What is the password for {args.sdwan_address}? (input will be hidden) ")
+
+    print()
 
     # Connect to network devices 
     testbed.connect(log_stdout=False)
