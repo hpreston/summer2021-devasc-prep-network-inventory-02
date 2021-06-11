@@ -100,6 +100,10 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
     node_system_url = "https://{aci_address}/api/node/mo/{node_dn}.json?query-target=children&target-subtree-class=topSystem"
 
     # Lookup Node List from controller
+    node_list_rsp = requests.get(node_list_url, cookies=cookies, verify=False)
+    # For debug, print response details 
+    print(f"node_list_rsp status_code: {node_list_rsp.status_code}")
+    print(f"node_list_rsp body: {node_list_rsp.text}")
 
     # Loop over nodes
     # Pull information on node from list 
