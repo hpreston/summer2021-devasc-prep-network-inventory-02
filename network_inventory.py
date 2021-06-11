@@ -423,7 +423,7 @@ if __name__ == "__main__":
         sdwan_info = lookup_sdwan_info(args.sdwan_address, sdwan_username, sdwan_password)
 
         # for debug, print results
-        print(sdwan_info)
+        # print(sdwan_info)
 
 
     print()
@@ -442,7 +442,14 @@ if __name__ == "__main__":
             get_device_inventory(testbed.devices[device], show_version, show_inventory)
             )
 
-    # print(f"network_inventory = {network_inventory}")
+    # Add ACI and SD-WAN inventory if needed 
+    if args.aci_address: 
+        network_inventory += aci_info
+    if args.sdwan_address: 
+        network_inventory += sdwan_info
+
+    # For debug, print inventory list
+    print(f"network_inventory = {network_inventory}")
 
     # Generate CSV file of data
     now = datetime.now()
