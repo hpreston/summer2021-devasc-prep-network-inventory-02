@@ -249,7 +249,22 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
         node_model = node["device-model"]
         node_serial = node["board-serial"]
         node_software = node["version"]
-        node_uptime = node["uptime-date"]
+
+        # Determine uptime from uptime_date
+        uptime_date = node["uptime-date"]
+
+        #   Need to Unix Timestamp from milliseconds to seconds
+        uptime_date = datetime.fromtimestamp(uptime_date/1000.0)
+        now = datetime.now()
+        uptime_delta = now - uptime_date 
+
+        # Get days, hours, minute details 
+        uptime_days = uptime_delta.days
+        uptime_minutes_total = int(uptime_delta.seconds / 60)
+        uptime_hours = int(uptime_minutes_total / 24)
+        uptime_minutes = uptime_minutes_total % 60
+
+        node_uptime = f"{uptime_days} days, {uptime_hours} hours, {uptime_minutes} minutes"
 
         inventory.append( (node_name, f"sdwan-{node_model}", node_software, node_uptime, node_serial) )
 
