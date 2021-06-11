@@ -123,11 +123,19 @@ if __name__ == "__main__":
     # Use argparse to determine the testbed file : https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Generate network inventory report from testbed')
     parser.add_argument('testbed', type=str, help='pyATS Testbed File')
+    parser.add_argument('--aci-address', type=str, help='Cisco ACI Controller address for gathering inventory details')
+    parser.add_argument('--sdwan-address', type=str, help='Cisco SD-WAN Controller address for gathering inventory details')
     args = parser.parse_args()
 
     # Create pyATS testbed object
     print(f"Loading testbed file {args.testbed}")
     testbed = load(args.testbed)
+
+    # Check if ACI and/or SD-WAN addresses provided 
+    if args.aci_address: 
+        print(f"Inventory details will be pulled from Cisco APIC {args.aci_address}")
+    if args.sdwan_address: 
+        print(f"Inventory details will be pulled from Cisco SD-WAN Controller {args.sdwan_address}")
 
     # Connect to network devices 
     testbed.connect(log_stdout=False)
