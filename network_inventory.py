@@ -158,14 +158,53 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
 
     return inventory
 
+def auth_sdwan(sdwan_address, sdwan_username, sdwan_password): 
+    """
+    Retrieve Authentication Token from SD-WAN Controller
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{sdwan_address}/j_security_check"
+
+    # The data payload for authentication 
+    payload = {"j_username": sdwan_username, "j_password": sdwan_password}
+
+    # Headers 
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    # Send the request to the controller  
+    try: 
+        response = requests.post(url, data=payload, headers=headers, verify=False)
+
+        # If the authentiction request succeeded, return the token
+        if response.status_code == 200 and "JSESSIONID" in response.cookies: 
+            return response.cookies["JSESSIONID"]
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to authentication to SDWAN")
+        print(e)
+        return False 
+    
 def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password): 
     """
-    Use REST API for ACI to lookup and return inventory details
+    Use REST API for SDWAN to lookup and return inventory details
 
     In case of an error, return False.
     """
 
     # Authenticate to API 
+    token = auth_sdwan(sdwan_address, sdwan_username, sdwan_password)
+    # For debug print token value 
+    print(f"sdwan_token: {token}")
+
+    if not token: 
+        print(f"  Error: Unable to authenticate to {sdwan_address}.")
+        return False
+
+    # Put token into cookie dict for requests
+    cookies = {"JSESSIONID": token}
+    
 
     # Send API Request(s) for information 
 
@@ -314,7 +353,7 @@ if __name__ == "__main__":
         aci_info = lookup_aci_info(args.aci_address, aci_username, aci_password)
 
         # for debug, print results
-        print(aci_info)
+        # print(aci_info)
 
     print()
 
