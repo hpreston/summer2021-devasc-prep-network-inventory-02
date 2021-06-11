@@ -123,10 +123,13 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
             cookies=cookies, verify=False
             )
         # For debug, print response details 
-        print(f"node_firmware_rsp status_code: {node_firmware_rsp.status_code}")
-        print(f"node_firmware_rsp body: {node_firmware_rsp.text}")
-        
-        node_software = None
+        # print(f"node_firmware_rsp status_code: {node_firmware_rsp.status_code}")
+        # print(f"node_firmware_rsp body: {node_firmware_rsp.text}")
+
+        if node_firmware_rsp.status_code == 200:
+            node_software = node_firmware_rsp.json()["imdata"][0]["firmwareRunning"]["attributes"]["version"]
+        else:
+            node_software = "Error"
 
         # Lookup Uptime info with API
         node_uptime = None
