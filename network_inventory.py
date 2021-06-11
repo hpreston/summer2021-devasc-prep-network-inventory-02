@@ -140,12 +140,14 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
             cookies=cookies, verify=False
             )
         # For debug, print response details 
-        print(f"node_system_rsp status_code: {node_system_rsp.status_code}")
-        print(f"node_system_rsp body: {node_system_rsp.text}")
+        # print(f"node_system_rsp status_code: {node_system_rsp.status_code}")
+        # print(f"node_system_rsp body: {node_system_rsp.text}")
 
         if node_system_rsp.status_code == 200:
             if node_system_rsp.json()["totalCount"] == "1": 
                 node_uptime = node_system_rsp.json()["imdata"][0]["topSystem"]["attributes"]["systemUpTime"]
+                node_uptime = node_uptime.split(":")
+                node_uptime = f"{node_uptime[0]} days, {node_uptime[1]} hours, {node_uptime[2]} mins"
             else: 
                 node_uptime = "Unknown"
         else:
