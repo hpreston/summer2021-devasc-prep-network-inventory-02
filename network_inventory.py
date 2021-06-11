@@ -14,6 +14,11 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 import re
 import csv
 from datetime import datetime
+import requests 
+import urllib3 
+
+# disable InsecureRequestWarning for self-signed certificates 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def parse_command(device, command): 
     """
@@ -33,6 +38,242 @@ def parse_command(device, command):
     # device.execute runs command, gathers raw output, and returns as string
     output = device.execute(command)
     return {"type": "raw", "output": output}
+
+def auth_aci(aci_address, aci_username, aci_password): 
+    """
+    Retrieve Authentication Token from ACI Controller
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{aci_address}/api/aaaLogin.json"
+
+    # The data payload for authentication 
+    payload = {"aaaUser": 
+                {
+                    "attributes": {
+                        "name": aci_username,
+                        "pwd": aci_password
+                    }
+                }
+            }
+
+    # Send the request to the controller  
+    try: 
+        response = requests.post(url, json=payload, verify=False)
+
+        # If the authentiction request succeeded, return the token
+        if response.status_code == 200: 
+            return response.json()["imdata"][0]["aaaLogin"]["attributes"]["token"]
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to authentication to APIC")
+        print(e)
+        return False 
+    
+def lookup_aci_info(aci_address, aci_username, aci_password): 
+    """
+    Use REST API for ACI to lookup and return inventory details
+
+    In case of an error, return False.
+    """
+
+    # Authenticate to API 
+    token = auth_aci(aci_address, aci_username, aci_password)
+    # For debug print token value 
+    # print(f"aci_token: {token}")
+
+    if not token: 
+        print(f"  Error: Unable to authenticate to {aci_address}.")
+        return False
+
+    # Put token into cookie dict for requests
+    cookies = {"APIC-cookie": token}
+    
+    # List to hold data for each device from controller
+    inventory = []
+    
+    # Send API Request(s) for information 
+    # API URLs
+    node_list_url = f"https://{aci_address}/api/node/class/fabricNode.json"
+    node_firmware_url = "https://{aci_address}/api/node/class/{node_dn}/firmwareRunning.json"
+    node_system_url = "https://{aci_address}/api/node/mo/{node_dn}.json?query-target=children&target-subtree-class=topSystem"
+
+    # Lookup Node List from controller
+    node_list_rsp = requests.get(node_list_url, cookies=cookies, verify=False)
+    # For debug, print response details 
+    # print(f"node_list_rsp status_code: {node_list_rsp.status_code}")
+    # print(f"node_list_rsp body: {node_list_rsp.text}")
+
+    if node_list_rsp.status_code != 200: 
+        print(f"  Error looking up node list from APIC. Status Code was {node_list_rsp.status_code}")
+        return False 
+
+    # Loop over nodes
+    fabric_nodes = node_list_rsp.json()["imdata"]
+    for node in fabric_nodes: 
+        # Pull information on node from list 
+        node_name = node["fabricNode"]["attributes"]["name"]
+        node_model = node["fabricNode"]["attributes"]["model"]
+        node_serial = node["fabricNode"]["attributes"]["serial"]
+
+        # Lookup Firmware info with API 
+        node_firmware_rsp = requests.get(
+            node_firmware_url.format(aci_address=aci_address, node_dn=node["fabricNode"]["attributes"]["dn"]), 
+            cookies=cookies, verify=False
+            )
+        # For debug, print response details 
+        # print(f"node_firmware_rsp status_code: {node_firmware_rsp.status_code}")
+        # print(f"node_firmware_rsp body: {node_firmware_rsp.text}")
+
+        if node_firmware_rsp.status_code == 200:
+            if node_firmware_rsp.json()["totalCount"] == "1": 
+                node_software = node_firmware_rsp.json()["imdata"][0]["firmwareRunning"]["attributes"]["version"]
+            else: 
+                node_software = "Unknown"
+        else:
+            node_software = "Error"
+
+        # Lookup Uptime info with API
+        node_system_rsp = requests.get(
+            node_system_url.format(aci_address=aci_address, node_dn=node["fabricNode"]["attributes"]["dn"]), 
+            cookies=cookies, verify=False
+            )
+        # For debug, print response details 
+        # print(f"node_system_rsp status_code: {node_system_rsp.status_code}")
+        # print(f"node_system_rsp body: {node_system_rsp.text}")
+
+        if node_system_rsp.status_code == 200:
+            if node_system_rsp.json()["totalCount"] == "1": 
+                node_uptime = node_system_rsp.json()["imdata"][0]["topSystem"]["attributes"]["systemUpTime"]
+                node_uptime = node_uptime.split(":")
+                node_uptime = f"{node_uptime[0]} days, {node_uptime[1]} hours, {node_uptime[2]} mins"
+            else: 
+                node_uptime = "Unknown"
+        else:
+            node_uptime = "Error"
+
+        # Compile and return information
+        inventory.append( (node_name, f"apic-{node_model}", node_software, node_uptime, node_serial) )
+
+    return inventory
+
+def auth_sdwan(sdwan_address, sdwan_username, sdwan_password): 
+    """
+    Retrieve Authentication Token from SD-WAN Controller
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{sdwan_address}/j_security_check"
+
+    # The data payload for authentication 
+    payload = {"j_username": sdwan_username, "j_password": sdwan_password}
+
+    # Headers 
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    # Send the request to the controller  
+    try: 
+        response = requests.post(url, data=payload, headers=headers, verify=False)
+
+        # If the authentiction request succeeded, return the token
+        if response.status_code == 200 and "JSESSIONID" in response.cookies: 
+            return response.cookies["JSESSIONID"]
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to authentication to SDWAN")
+        print(e)
+        return False 
+
+def logout_sdwan(sdwan_address, token): 
+    """
+    Logout of SD-WAN API
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{sdwan_address}/logout?nocache=15"
+
+    # Auth Cookie
+    cookies = {"JSESSIONID": token}
+
+    # Send the request to the controller  
+    try: 
+        response = requests.get(url, cookies=cookies, verify=False)
+
+        # Test logout result
+        if response.status_code == 200: 
+            return True
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to logout from SDWAN")
+        print(e)
+        return False 
+
+def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password): 
+    """
+    Use REST API for SDWAN to lookup and return inventory details
+
+    In case of an error, return False.
+    """
+
+    # Authenticate to API 
+    token = auth_sdwan(sdwan_address, sdwan_username, sdwan_password)
+    # For debug print token value 
+    # print(f"sdwan_token: {token}")
+
+    if not token: 
+        print(f"  Error: Unable to authenticate to {sdwan_address}.")
+        return False
+
+    # Put token into cookie dict for requests
+    cookies = {"JSESSIONID": token}
+    
+    # Send API Request(s) for information 
+    device_url = f"https://{sdwan_address}/dataservice/device"
+
+    device_rsp = requests.get(device_url, cookies=cookies, verify=False)
+    # For Debugging, print response 
+    # print(f"device_rsp status_code: {device_rsp.status_code}")
+    # print(f"device_rsp body: {device_rsp.text}")
+
+    # List to hold data for each device from controller
+    inventory = []
+
+    # Loop over devices and return results 
+    sdwan_nodes = device_rsp.json()["data"]
+    for node in sdwan_nodes: 
+        # Pull info on node
+        node_name = node["host-name"]
+        node_model = node["device-model"]
+        node_serial = node["board-serial"]
+        node_software = node["version"]
+
+        # Determine uptime from uptime_date
+        uptime_date = node["uptime-date"]
+
+        #   Need to Unix Timestamp from milliseconds to seconds
+        uptime_date = datetime.fromtimestamp(uptime_date/1000.0)
+        now = datetime.now()
+        uptime_delta = now - uptime_date 
+
+        # Get days, hours, minute details 
+        uptime_days = uptime_delta.days
+        uptime_minutes_total = int(uptime_delta.seconds / 60)
+        uptime_hours = int(uptime_minutes_total / 24)
+        uptime_minutes = uptime_minutes_total % 60
+
+        node_uptime = f"{uptime_days} days, {uptime_hours} hours, {uptime_minutes} minutes"
+
+        inventory.append( (node_name, f"sdwan-{node_model}", node_software, node_uptime, node_serial) )
+
+    # Logout API
+    logout_sdwan(sdwan_address, token)
+
+    # Compile and return information
+
+    return inventory
 
 def get_device_inventory(device, show_version, show_inventory): 
     """
@@ -103,18 +344,49 @@ def get_device_inventory(device, show_version, show_inventory):
 # Script entry point
 if __name__ == "__main__": 
     import argparse
+    from getpass import getpass
 
     # print("Creating a network inventory script.")
+
+    # Plan for adding ACI and SD-WAN to inventory 
+    # Steps: 
+    #   1. Additional arguments for ACI and SD-WAN Controllers 
+    #      - Optional arguments for addresses of each controller 
+    #   2. Request credentials for if needed 
+    #      - Use Python "input()" function 
+    #   3. Make REST API calls to gather inventory details
+    #      - After functions that parse commands for CLI devices
+    #   4. Add to network inventory
+    #      - Maintain same tuple based format from CLI devices
+    #        (device_name, device_os, software_version, uptime, serial_number)
+    #      - For device os use "controller-model" format
 
     # Load pyATS testbed into script 
     # Use argparse to determine the testbed file : https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Generate network inventory report from testbed')
     parser.add_argument('testbed', type=str, help='pyATS Testbed File')
+    parser.add_argument('--aci-address', type=str, help='Cisco ACI Controller address for gathering inventory details')
+    parser.add_argument('--sdwan-address', type=str, help='Cisco SD-WAN Controller address for gathering inventory details')
     args = parser.parse_args()
 
     # Create pyATS testbed object
     print(f"Loading testbed file {args.testbed}")
     testbed = load(args.testbed)
+
+    print () 
+    
+    # Check if ACI and/or SD-WAN addresses provided 
+    if args.aci_address: 
+        aci_username = input(f"What is the username for {args.aci_address}? ")
+        aci_password = getpass(f"What is the password for {args.aci_address}? (input will be hidden) ")
+
+    print()
+
+    if args.sdwan_address: 
+        sdwan_username = input(f"What is the username for {args.sdwan_address}? ")
+        sdwan_password = getpass(f"What is the password for {args.sdwan_address}? (input will be hidden) ")
+
+    print()
 
     # Connect to network devices 
     testbed.connect(log_stdout=False)
@@ -134,6 +406,28 @@ if __name__ == "__main__":
         show_inventory[device] = parse_command(testbed.devices[device], "show inventory")
         # print(f"{device} show inventory: {show_inventory[device]}")
 
+    print()
+
+    # Gather info on inventory from ACI and SD-WAN if info provided 
+    if args.aci_address: 
+        print(f"Inventory details will be pulled from Cisco APIC {args.aci_address}")
+        aci_info = lookup_aci_info(args.aci_address, aci_username, aci_password)
+
+        # for debug, print results
+        # print(aci_info)
+
+    print()
+
+    if args.sdwan_address: 
+        print(f"Inventory details will be pulled from Cisco SD-WAN Controller {args.sdwan_address}")
+        sdwan_info = lookup_sdwan_info(args.sdwan_address, sdwan_username, sdwan_password)
+
+        # for debug, print results
+        # print(sdwan_info)
+
+
+    print()
+    
 
     # Disconnect from network devices 
     for device in testbed.devices: 
@@ -148,6 +442,13 @@ if __name__ == "__main__":
             get_device_inventory(testbed.devices[device], show_version, show_inventory)
             )
 
+    # Add ACI and SD-WAN inventory if needed 
+    if args.aci_address: 
+        network_inventory += aci_info
+    if args.sdwan_address: 
+        network_inventory += sdwan_info
+
+    # For debug, print inventory list
     # print(f"network_inventory = {network_inventory}")
 
     # Generate CSV file of data
