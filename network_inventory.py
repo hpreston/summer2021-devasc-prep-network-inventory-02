@@ -185,7 +185,32 @@ def auth_sdwan(sdwan_address, sdwan_username, sdwan_password):
         print("  Error: Unable to authentication to SDWAN")
         print(e)
         return False 
-    
+
+def logout_sdwan(sdwan_address, token): 
+    """
+    Logout of SD-WAN API
+    """
+
+    # The API Endpoint for authentication 
+    url = f"https://{sdwan_address}/logout?nocache=15"
+
+    # Auth Cookie
+    cookies = {"JSESSIONID": token}
+
+    # Send the request to the controller  
+    try: 
+        response = requests.get(url, cookies=cookies, verify=False)
+
+        # Test logout result
+        if response.status_code == 200: 
+            return True
+        else: 
+            return False
+    except Exception as e: 
+        print("  Error: Unable to logout from SDWAN")
+        print(e)
+        return False 
+
 def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password): 
     """
     Use REST API for SDWAN to lookup and return inventory details
@@ -209,6 +234,7 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
     # Send API Request(s) for information 
 
     # Logout API
+    logout_sdwan(sdwan_address, token)
 
     # Compile and return information
 
