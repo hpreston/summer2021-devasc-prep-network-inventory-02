@@ -34,6 +34,38 @@ def parse_command(device, command):
     output = device.execute(command)
     return {"type": "raw", "output": output}
 
+def lookup_aci_info(aci_address, aci_username, aci_password): 
+    """
+    Use REST API for ACI to lookup and return inventory details
+
+    In case of an error, return False.
+    """
+
+    # Authenticate to API 
+
+    # Send API Request(s) for information 
+
+    # Compile and return information
+
+    return False
+
+def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password): 
+    """
+    Use REST API for ACI to lookup and return inventory details
+
+    In case of an error, return False.
+    """
+
+    # Authenticate to API 
+
+    # Send API Request(s) for information 
+
+    # Logout API
+
+    # Compile and return information
+
+    return False
+
 def get_device_inventory(device, show_version, show_inventory): 
     """
     Given a testbed device and the output dictionaries, return the 
@@ -165,6 +197,28 @@ if __name__ == "__main__":
         show_inventory[device] = parse_command(testbed.devices[device], "show inventory")
         # print(f"{device} show inventory: {show_inventory[device]}")
 
+    print()
+
+    # Gather info on inventory from ACI and SD-WAN if info provided 
+    if args.aci_address: 
+        print(f"Inventory details will be pulled from Cisco APIC {args.aci_address}")
+        aci_info = lookup_aci_info(args.aci_address, aci_username, aci_password)
+
+        # for debug, print results
+        print(aci_info)
+
+    print()
+
+    if args.sdwan_address: 
+        print(f"Inventory details will be pulled from Cisco SD-WAN Controller {args.sdwan_address}")
+        sdwan_info = lookup_sdwan_info(args.sdwan_address, sdwan_username, sdwan_password)
+
+        # for debug, print results
+        print(sdwan_info)
+
+
+    print()
+    
 
     # Disconnect from network devices 
     for device in testbed.devices: 
