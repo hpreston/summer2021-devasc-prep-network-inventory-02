@@ -127,12 +127,29 @@ def lookup_aci_info(aci_address, aci_username, aci_password):
         # print(f"node_firmware_rsp body: {node_firmware_rsp.text}")
 
         if node_firmware_rsp.status_code == 200:
-            node_software = node_firmware_rsp.json()["imdata"][0]["firmwareRunning"]["attributes"]["version"]
+            if node_firmware_rsp.json()["totalCount"] == "1": 
+                node_software = node_firmware_rsp.json()["imdata"][0]["firmwareRunning"]["attributes"]["version"]
+            else: 
+                node_software = "Unknown"
         else:
             node_software = "Error"
 
         # Lookup Uptime info with API
-        node_uptime = None
+        node_system_rsp = requests.get(
+            node_system_url.format(aci_address=aci_address, node_dn=node["fabricNode"]["attributes"]["dn"]), 
+            cookies=cookies, verify=False
+            )
+        # For debug, print response details 
+        print(f"node_system_rsp status_code: {node_system_rsp.status_code}")
+        print(f"node_system_rsp body: {node_system_rsp.text}")
+
+        if node_system_rsp.status_code == 200:
+            if node_system_rsp.json()["totalCount"] == "1": 
+                node_uptime = node_system_rsp.json()["imdata"][0]["topSystem"]["attributes"]["systemUpTime"]
+            else: 
+                node_uptime = "Unknown"
+        else:
+            node_uptime = "Error"
 
         # Compile and return information
         inventory.append( (node_name, f"apic-{node_model}", node_software, node_uptime, node_serial) )
