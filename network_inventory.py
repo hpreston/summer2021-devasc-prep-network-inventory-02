@@ -389,8 +389,8 @@ if __name__ == "__main__":
     print()
 
     # Connect to network devices 
-    testbed.connect(log_stdout=False)
     print(f"Connecting to all devices in testbed {testbed.name}")
+    testbed.connect(log_stdout=False)
 
 
     # Run commands to gather output from devices 
