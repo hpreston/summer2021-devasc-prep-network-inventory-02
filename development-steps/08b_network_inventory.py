@@ -261,7 +261,7 @@ def lookup_sdwan_info(sdwan_address, sdwan_username, sdwan_password):
         # Get days, hours, minute details 
         uptime_days = uptime_delta.days
         uptime_minutes_total = int(uptime_delta.seconds / 60)
-        uptime_hours = int(uptime_minutes_total / 24)
+        uptime_hours = int(uptime_minutes_total / 60)
         uptime_minutes = uptime_minutes_total % 60
 
         node_uptime = f"{uptime_days} days, {uptime_hours} hours, {uptime_minutes} minutes"
